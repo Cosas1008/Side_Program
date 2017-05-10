@@ -33,6 +33,11 @@ public:
     bool parse();
     void dump();
     void solution();
+    void Dijkstra();
+    void findCycle();
+    edge_S* doesEdgeExist(int start, int end);
+    void FloydWarshallWithPathReconstruction(int, int);
+
 
     //data
     vector<edge_S*>     _vEdge;

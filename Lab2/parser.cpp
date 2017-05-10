@@ -5,6 +5,14 @@
 #include <fstream>
 #include <string>
 #include <cstring>
+#include <iostream>
+#include <climits>
+
+#define INF INT_MAX;
+// self created functions
+void DijkstraFind(edge_S e, node_S n);
+
+
 //----------------------------------------------------------------------------------------------------------------------
 parser_S::parser_S(const char* p_caCase) : _caCase(p_caCase), _caSol(0), _dMMC(0), _vCycle(0)
 {
@@ -34,6 +42,8 @@ bool parser_S::_isFileExist(const char* p_caFile)
 bool parser_S::parse()
 {
     parseInput();
+    //calculate the min as _dMMC and path as _vCycle
+    findCycle();
     if (_caSol) {
         return parseSol();
     }
@@ -132,9 +142,87 @@ void parser_S::dump()
 //----------------------------------------------------------------------------------------------------------------------
 void parser_S::solution() {
     FILE *pFile;
+
+    Dijkstra();
+
+
     pFile = fopen("solution.txt","w");
     fprintf(pFile,"//min value:");
     fprintf(pFile,"//the cycle:");
     fclose(pFile);
 }
 
+void parser_S::findCycle(){
+    //_vCycle store the cycle path
+    //method 1: Floyd-Warshall
+    int numNode = _vNode.size();
+    int path[numNode][numNode];
+    int predecessor[numNode][numNode];
+
+    // initialize the path array
+    for(int u = 0; u < numNode; u++){
+        for(int v = 0; v < numNode; v++){
+            edge_S *Edge = doesEdgeExist(u+1,v+1);
+            if(u==v) {
+                path[u][v] = 0;
+                predecessor[u][v] = 0; // initialize the pi
+            }else if(Edge->_weight != 0){// found the element
+                path[u][v] = Edge->_weight;
+                predecessor[u][v] = Edge->_fromNode;
+            }else{
+                path[u][v] = INF;
+                predecessor[u][v] = 0; // initialize the pi
+            }
+
+        }
+    }
+    // Floyd-Warshall
+
+    for(int u = 0; u < numNode; u++){
+        for(int v = 0; v < numNode; v++){
+            for(int k = 0; k < numNode; k++){
+                if(path[u][v] > path[u][k] + path[k][v]){
+                    path[u][v] = path[u][k] + path[k][v];
+                    predecessor[u][v] = predecessor[k][v];
+                }
+            }
+        }
+    }
+    cout << "Floyd–Warshall's Algorithm : " << endl;
+    for(int i = 0 ; i < numNode; i ++){
+        for(int j = 0; j <  numNode; j ++){
+            cout << path[i][j] << " ";
+        }
+        cout << endl;
+    }
+    cout << "Predecessor list is : " << endl;
+    for(int i = 0 ; i < numNode; i ++){
+        for(int j = 0; j <  numNode; j ++){
+            cout << predecessor[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
+
+void parser_S::Dijkstra()
+{
+    // simple solution
+    //find the cycle start from Node n and end to Node n
+
+}
+void DijkstraFind(edge_S e, node_S n)
+{
+
+}
+edge_S* parser_S::doesEdgeExist(int start, int end) {
+    //find the start node element index with binary sort (if I have more time)
+    //ref: http://en.cppreference.com/w/cpp/algorithm/lower_bound
+    for(auto i : _vEdge){
+        if(i->_fromNode == start && i->_toNode == end){
+            return i;
+        }
+    }
+    edge_S *returnEdge = new edge_S(0,0,0);
+    return returnEdge;
+}
