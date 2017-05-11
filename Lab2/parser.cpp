@@ -7,11 +7,11 @@
 #include <cstring>
 #include <iostream>
 #include <climits>
+#include <algorithm>
 
 #define INF INT_MAX;
 // self created functions
-void DijkstraFind(edge_S e, node_S n);
-
+int DijkstraFind(edge_S e, node_S n);
 
 //----------------------------------------------------------------------------------------------------------------------
 parser_S::parser_S(const char* p_caCase) : _caCase(p_caCase), _caSol(0), _dMMC(0), _vCycle(0)
@@ -88,6 +88,10 @@ void parser_S::parseInput()
     while (_getLine()) {
         sscanf(_buffer, "%d %d %d", &from, &to, &weight);
         edge_S* pEdge = new edge_S(from, to, weight);
+        if(_startIndex.find(from) == _startIndex.end()){
+            // key: start point / value is index of _vEdge
+            _startIndex[from] = _vEdge.size();
+        }
         _vEdge.push_back(pEdge);
         if (n.count(from) == 0) {
             node_S* pFrom = new node_S(from);
@@ -100,6 +104,9 @@ void parser_S::parseInput()
             n.insert(to);
         }
     }
+    // We MUST assume the Edge has been sorted!!!!
+    std::sort(_vEdge.begin(),_vEdge.end(),less_than_key());
+
     if ((int) _vEdge.size() != numEdge) {
         printf("[parser] Warning: edge inconsistency, there should be %d edges, but only %d edges are parsed\n", numEdge, (int) _vEdge.size());
         assert(0);
@@ -144,8 +151,6 @@ void parser_S::solution() {
     FILE *pFile;
 
     Dijkstra();
-
-
     pFile = fopen("solution.txt","w");
     fprintf(pFile,"//min value:");
     fprintf(pFile,"//the cycle:");
@@ -188,7 +193,7 @@ void parser_S::findCycle(){
             }
         }
     }
-    cout << "Floyd–Warshall's Algorithm : " << endl;
+    cout << "Floyd Warshall's Algorithm : " << endl;
     for(int i = 0 ; i < numNode; i ++){
         for(int j = 0; j <  numNode; j ++){
             cout << path[i][j] << " ";
@@ -202,18 +207,43 @@ void parser_S::findCycle(){
         }
         cout << endl;
     }
+
+    //detect cycle from predecessor table.
+    for(int i = 0 ; i < numNode; i ++){
+        for(int j = 0; j <  numNode; j ++){
+            int temp, start, end;
+            if(predecessor[i][j] == predecessor[j][i]){
+                // there is a cycle
+                // determine which to start
+            }
+        }
+    }
 }
 
 
 void parser_S::Dijkstra()
 {
     // simple solution
-    //find the cycle start from Node n and end to Node n
+    // initialize
+    int numNode = _vNode.size();
+    int distance[numNode];
+    bool visited[numNode];
+    path *p = new path();
+    //pick the inital node
+    int u = _vEdge[0]->_fromNode;
 
+    //find the cycle start from Node n and end to Node n
+    for( auto i : _vEdge){
+        //for every Edge
+
+    }
 }
-void DijkstraFind(edge_S e, node_S n)
+int DijkstraFind(int start)
 {
 
+    int min_index;
+
+    return min_index;
 }
 edge_S* parser_S::doesEdgeExist(int start, int end) {
     //find the start node element index with binary sort (if I have more time)
@@ -225,4 +255,11 @@ edge_S* parser_S::doesEdgeExist(int start, int end) {
     }
     edge_S *returnEdge = new edge_S(0,0,0);
     return returnEdge;
+}
+
+
+void node_S::addConnection(int vertex) {
+    list<int>::iterator it;
+    it = connectTo.begin();
+    connectTo.insert(it,vertex);
 }

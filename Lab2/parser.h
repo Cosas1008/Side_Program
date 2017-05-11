@@ -8,13 +8,19 @@
 #include <vector>
 #include <fstream>
 #include <set>
+#include <map>
+#include <list>
+
+
 using namespace std;
 
 //----------------------------------------------------------------------------------------------------------------------
 struct node_S{
 public:
     node_S(int id) : _id(id) {}
+    void addConnection(int);
     int _id;
+    list<int> connectTo;
 };
 //----------------------------------------------------------------------------------------------------------------------
 struct edge_S{
@@ -24,6 +30,14 @@ public:
     int _toNode;
     int _weight;
 };
+//----------------------------------------------------------------------------------------------------------------------
+struct path{
+public:
+    path(){};
+    void addpath();
+    vector<edge_S*> walked;
+};
+
 //----------------------------------------------------------------------------------------------------------------------
 struct parser_S{
 public:
@@ -43,6 +57,8 @@ public:
     vector<edge_S*>     _vEdge;
     vector<node_S*>     _vNode;
 
+    //mapping
+    map<int,int> _startIndex;
 private:
     void parseInput();
     bool parseSol();
@@ -58,6 +74,12 @@ private:
     vector<int> _vCycle;
 };
 //----------------------------------------------------------------------------------------------------------------------
-
+struct less_than_key
+{
+    inline bool operator() (const edge_S* edge1, const edge_S* edge2)
+    {
+        return (edge1->_fromNode < edge2->_fromNode);
+    }
+};
 #endif
 

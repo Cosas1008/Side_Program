@@ -8,3 +8,9 @@
 2. Dijkstra's algorithm
 
 3. Floyd-Warshall's algorithm  
+
+4. karp's minimum mean cycle 
+
+5. Bellman–Ford algorithm
+
+6. 
