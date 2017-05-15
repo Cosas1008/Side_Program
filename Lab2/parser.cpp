@@ -8,6 +8,7 @@
 #include <iostream>
 #include <climits>
 #include <algorithm>
+#include <iomanip>
 
 #define INF INT_MAX;
 // self created functions
@@ -175,7 +176,7 @@ void parser_S::findCycle(){
                 path[u][v] = Edge->_weight;
                 predecessor[u][v] = Edge->_fromNode;
             }else{
-                path[u][v] = INF;
+                path[u][v] = 9999;
                 predecessor[u][v] = 0; // initialize the pi
             }
 
@@ -196,25 +197,61 @@ void parser_S::findCycle(){
     cout << "Floyd Warshall's Algorithm : " << endl;
     for(int i = 0 ; i < numNode; i ++){
         for(int j = 0; j <  numNode; j ++){
-            cout << path[i][j] << " ";
+            cout << setw(7) << path[i][j];
         }
         cout << endl;
     }
     cout << "Predecessor list is : " << endl;
     for(int i = 0 ; i < numNode; i ++){
         for(int j = 0; j <  numNode; j ++){
-            cout << predecessor[i][j] << " ";
+            cout << setw(6) << predecessor[i][j] ;
         }
         cout << endl;
     }
 
     //detect cycle from predecessor table.
     for(int i = 0 ; i < numNode; i ++){
-        for(int j = 0; j <  numNode; j ++){
-            int temp, start, end;
-            if(predecessor[i][j] == predecessor[j][i]){
+        for(int j = i; j <  numNode ; j ++){
+            if(i == j){
+                //self loop
+                continue;
+            }else if(predecessor[i][j] == 0 && predecessor[j][i] == 0) {
+                //no way from A to B or from B to A
+                continue;
+            }else if(predecessor[i][j] != 0 && predecessor[j][i] != 0){
                 // there is a cycle
                 // determine which to start
+                cout << "there is one loop from " << i+1 << " through " << j+1<< endl;
+                cout << "End : " << j+1 << " ";
+                //check the path from j to i
+                int k = predecessor[j][i];
+                int l = predecessor[i][j];
+                if(k != (j+1)){
+                    do{
+                        cout << k << " ";
+                        k = predecessor[j][k-1];
+                    }while(predecessor[j][k-1] != k && k != 0);
+                }
+                cout << " |"<<(i+1) << "| ";
+//                cout << k << " ";
+//                if((j+1) != k){
+//                    while (predecessor[k-1][i] != k){
+//                        cout << predecessor[k-1][i] << " ";
+//                        k = predecessor[k-1][i];
+//                    }
+//                }
+                if(l != (i+1)){
+                    //check the path from i to j
+                    do{
+                        cout << l << " ";
+                        l = predecessor[l-1][j];
+                    }while(predecessor[l-1][j] != l && l != 0);
+                }
+                cout << j+1 << ": Start" << endl;
+
+            }else{
+                // only one direction way
+                continue;
             }
         }
     }
@@ -228,7 +265,6 @@ void parser_S::Dijkstra()
     int numNode = _vNode.size();
     int distance[numNode];
     bool visited[numNode];
-    path *p = new path();
     //pick the inital node
     int u = _vEdge[0]->_fromNode;
 

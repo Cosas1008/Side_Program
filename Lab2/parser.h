@@ -33,8 +33,9 @@ public:
 //----------------------------------------------------------------------------------------------------------------------
 struct path{
 public:
-    path(){};
+    path(int s): start(s){}
     void addpath();
+    int start;
     vector<edge_S*> walked;
 };
 
