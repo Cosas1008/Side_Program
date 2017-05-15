@@ -9,10 +9,14 @@
 #include <climits>
 #include <algorithm>
 #include <iomanip>
+#include <stack>
+#include <queue>
 
 #define INF INT_MAX;
 // self created functions
-int DijkstraFind(edge_S e, node_S n);
+
+
+
 
 //----------------------------------------------------------------------------------------------------------------------
 parser_S::parser_S(const char* p_caCase) : _caCase(p_caCase), _caSol(0), _dMMC(0), _vCycle(0)
@@ -194,6 +198,7 @@ void parser_S::findCycle(){
             }
         }
     }
+    //debug code
     cout << "Floyd Warshall's Algorithm : " << endl;
     for(int i = 0 ; i < numNode; i ++){
         for(int j = 0; j <  numNode; j ++){
@@ -208,7 +213,6 @@ void parser_S::findCycle(){
         }
         cout << endl;
     }
-
     //detect cycle from predecessor table.
     for(int i = 0 ; i < numNode; i ++){
         for(int j = i; j <  numNode ; j ++){
@@ -219,35 +223,41 @@ void parser_S::findCycle(){
                 //no way from A to B or from B to A
                 continue;
             }else if(predecessor[i][j] != 0 && predecessor[j][i] != 0){
+                stack<int> s;
+
                 // there is a cycle
                 // determine which to start
+                int weights = 0;
                 cout << "there is one loop from " << i+1 << " through " << j+1<< endl;
-                cout << "End : " << j+1 << " ";
+                cout << "End : " << i+1 << " ";
+                s.push(i+1);
                 //check the path from j to i
                 int k = predecessor[j][i];
                 int l = predecessor[i][j];
                 if(k != (j+1)){
                     do{
                         cout << k << " ";
-                        k = predecessor[j][k-1];
-                    }while(predecessor[j][k-1] != k && k != 0);
+                        s.push(k);
+                        k  = predecessor[j][k-1];
+                    }while(k != (j+1));
                 }
-                cout << " |"<<(i+1) << "| ";
-//                cout << k << " ";
-//                if((j+1) != k){
-//                    while (predecessor[k-1][i] != k){
-//                        cout << predecessor[k-1][i] << " ";
-//                        k = predecessor[k-1][i];
-//                    }
-//                }
+
+                //weight add k -> j+1
+                cout << (j+1) << " ";
+                s.push(j+1);
                 if(l != (i+1)){
-                    //check the path from i to j
                     do{
                         cout << l << " ";
-                        l = predecessor[l-1][j];
-                    }while(predecessor[l-1][j] != l && l != 0);
+                        s.push(l);
+                        l = predecessor[i][l-1];
+                    }while(l != i+1);
                 }
-                cout << j+1 << ": Start" << endl;
+                cout << i+1 << " : From ";
+                s.push(i+1);
+                //calculate the weight
+                weights += path[j][i];
+                weights += path[i][j];
+                cout << ",and weight is : " << weights << endl;
 
             }else{
                 // only one direction way
