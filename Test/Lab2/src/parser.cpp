@@ -24,8 +24,8 @@ bool parser_S::_isFileExist(const char* p_caFile)
         printf("Warning: can not find file: %s !\n", p_caFile);
         _input.close();
         return false;
-    }
-
+    } 
+    
     printf("File %s Open Success\n", p_caFile);
     _input.close();
     return true;
