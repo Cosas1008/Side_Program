@@ -1,6 +1,6 @@
 I would like to plot the curve of my mechanical structure
-![alt text](https://github.com/Cosas1008/Side_Program/blob/master/Plot_Curve_Path/src/horn.PNG =100x200)  
-![alt text](https://github.com/Cosas1008/Side_Program/blob/master/Plot_Curve_Path/src/mechanical.png =100x200)  
-and the final solution looks like this
-![alt text](https://github.com/Cosas1008/Side_Program/blob/master/Plot_Curve_Path/src/path.png =100x200)  
-![alt text](https://github.com/Cosas1008/Side_Program/blob/master/Plot_Curve_Path/src/rect.png =100x200)  
+![Horn](https://github.com/Cosas1008/Side_Program/blob/master/Plot_Curve_Path/src/horn.PNG | width=48)  
+The final solution plot in matlab looks like this
+![path](https://github.com/Cosas1008/Side_Program/blob/master/Plot_Curve_Path/src/path.png | width=48)  
+![rectangle](https://github.com/Cosas1008/Side_Program/blob/master/Plot_Curve_Path/src/rect.png | width=48)  and the path structure 
+![mechanical](https://github.com/Cosas1008/Side_Program/blob/master/Plot_Curve_Path/src/mechanical.png | width=48)
