@@ -1,4 +1,5 @@
-.ipynb_checkpoints	
-*.pyc
+.ipynb_checkpoints
+*.pyc	
 *.pdf
 *.xlsx
+*.csv
