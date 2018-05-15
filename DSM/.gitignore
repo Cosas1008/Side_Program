@@ -1,0 +1,4 @@
+hiredis/
+*.exe
+*.rbd
+*.o
