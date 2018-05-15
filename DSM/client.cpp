@@ -15,6 +15,7 @@
 
 using namespace std;
 
+
 int connectToServer(char *host, char *port) 
 {
 	int sockfd, n;
@@ -87,7 +88,7 @@ int main(int argc, char **argv)
 	// printf("Connect to %s : %s\n", argv[1], argv[4]);
  
 	while(getline(fin, cmd)) {
-		cout << cmd << endl;	// debug cmd
+		// cout << totalCnt << cmd << endl;	// debug cmd
     	
 		if (totalCnt % 3 == 0)
 			sockfd = server1;
@@ -95,36 +96,40 @@ int main(int argc, char **argv)
 			sockfd = server2;
 		else
 			sockfd = server3;
+		
+		char idx_cmd[MAXLINE];
 
-    	cmd += '\n';			// add new line char
-		write(sockfd, cmd.c_str(), cmd.length());
-		if(cmd == "end\n"){
+		snprintf(idx_cmd, MAXLINE, "%d %s\n", totalCnt+1, cmd.c_str());
+
+		write(sockfd,idx_cmd, strlen(idx_cmd));
+
+		if(cmd == "end") {
         	break;
     	}
     	// blocking req/res
-	    while( (n = readline(sockfd, buffer, MAXLINE)) > 0)
-	    {
-	    	printf("%s\n", buffer);
-	    	if(!strcmp(buffer, "err!\n")){
-	    		cout << "err!" << endl;
-		        failCnt += 1;		//fail
-		        break;
-		    }else if(!strcmp(buffer, "okay!\n")) {
-		    	cout << "okay!" << endl;
-		    	break;
-		    }
-	    }
+	    // while( (n = readline(sockfd, buffer, MAXLINE)) > 0)
+	    // {
+	    // 	printf("%s\n", buffer);
+	    // 	if(!strcmp(buffer, "err!\n")){
+	    // 		cout << "err!" << endl;
+		//         failCnt += 1;		//fail
+		//         break;
+		//     }else if(!strcmp(buffer, "okay!\n")) {
+		//     	cout << "okay!" << endl;
+		//     	break;
+		//     }
+	    // }
     	totalCnt+= 1;
 	}
-
+	
 	while( (n = readline(sockfd, buffer, MAXLINE)) > 0) 
 	{
 		buffer[n] = 0;
 		fout << buffer;
 		cout << buffer;
 	}
-	cout << "success rate : (" << totalCnt - failCnt << "/" << totalCnt << ")" << endl;
-	fout << "success rate : (" << totalCnt - failCnt << "/" << totalCnt << ")" << endl;
+	// cout << "success rate : (" << totalCnt - failCnt << "/" << totalCnt << ")" << endl;
+	// fout << "success rate : (" << totalCnt - failCnt << "/" << totalCnt << ")" << endl;
 	fin.close();
 	fout.close();
 	close(server1);
