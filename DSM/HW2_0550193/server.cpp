@@ -30,24 +30,35 @@ redisContext *redis;
 int listenfd, connfd;
 struct sockaddr_in server_addr;
 void checkConnection();
-bool checkKeyAndValue(string key, string value);
-bool isExist(string key);
 
-int *cmd_status;
-int *total_cmd_count;
-int *fail_cmd_count;
+
+bool isExist(string key) {
+	char cmd[MAXLINE];
+	int result;
+	
+	snprintf(cmd, sizeof(cmd), "exists %s", key.c_str());
+	redisReply *r = (redisReply *) redisCommand(redis, cmd);
+
+	if (r->integer == 1) {
+		freeReplyObject(r);
+		return true;
+	}
+	else {
+		freeReplyObject(r);
+		return false;
+	} 
+}
+
 
 // Shared Memory
-int create_share_mem(key_t key, size_t size, int **shm_addr) 
+int *create_share_mem(key_t key, size_t size) 
 {
     int shmid = shmget(key, size, 0666 | IPC_CREAT);
 
-	*shm_addr = (int*) shmat(shmid, NULL, 0);
-
-    return shmid;
+    return (int*) shmat(shmid, NULL, 0);
 }
 
-void clean_share_mem(int* shm_addr, int shm_id) {
+void clean_share_mem(char* shm_addr, int shm_id) {
 	shmdt(shm_addr);
 	shmctl(shm_id , IPC_RMID , NULL);
 }
@@ -71,16 +82,22 @@ int main(int argc, char *argv[], char *envp[])
 		return -1;
 	}
 	
+	// flush database
+	redisReply *r = (redisReply *) redisCommand(redis, "flushall");
+	
 	bzero(&server_addr, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(atoi(argv[1]));
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	checkConnection();
 
-	// point to the shared memory address
-	int cmd_status_id = create_share_mem(CMD_STATUS, sizeof(int), &cmd_status);
-	int total_cmd_count_id = create_share_mem(TOTAL_CMD_COUNT, sizeof(int), &total_cmd_count);
-	int fail_cmd_count_id = create_share_mem(FAIL_CMD_COUNT, sizeof(int), &fail_cmd_count);
+	int *cmd_status = create_share_mem(CMD_STATUS, sizeof(int));
+	int *total_cmd_count = create_share_mem(TOTAL_CMD_COUNT, sizeof(int));
+	int *fail_cmd_count = create_share_mem(FAIL_CMD_COUNT, sizeof(int));
+
+	*cmd_status = 0;
+	*total_cmd_count = 0;
+	*fail_cmd_count = 0;
 	
 	while (1) {
 		connfd = accept(listenfd, (struct sockaddr *) NULL, NULL);
@@ -104,11 +121,6 @@ int main(int argc, char *argv[], char *envp[])
 					// block until previous command finished
 				}
 			}
-			else {
-				// flush database
-				redisReply *r = (redisReply *) redisCommand(redis, "flushall");
-			}
-
 			cout << argv[1] << " : " << cmd_idx << " " << cmd << endl;
 
 			if (!strcmp(cmd, "init")) {
@@ -122,13 +134,12 @@ int main(int argc, char *argv[], char *envp[])
 				if((pch = strtok(NULL, " \r\n"))) {
 					value = string(pch);
 				}
-				// checkKeyAndValue(key,value);
+
 				if (isExist(key) || (std::stoi(value) < 0 )) {	// std::stoi is the C++11 function
 					*fail_cmd_count += 1;
 					cout << "key failed " << endl;
-					// strcpy(rindex,"err!\n");
+					strcpy(rindex,"err!\n");
 					// write(connfd, rindex, strlen(rindex)); // reply to client index
-					// *cmd_status = atoi(cmd_idx);
 					*cmd_status = atoi(cmd_idx);
 					continue;
 				}
@@ -150,13 +161,14 @@ int main(int argc, char *argv[], char *envp[])
 				if (!isExist(key) || (std::stoi(value) < 0)){
 					*fail_cmd_count += 1;
 					cout << "key failed " << endl;
-					// strcpy(rindex,"err!\n");
+					strcpy(rindex,"err!\n");
 					// write(connfd, rindex, strlen(rindex)); // reply to client index
-					// *cmd_status = atoi(cmd_idx);
 					*cmd_status = atoi(cmd_idx);
 					continue;
 				}		
+
 				snprintf(redisCmd, sizeof(redisCmd), "incrby %s %s", key.c_str(), value.c_str());
+				
 				redisReply *r = (redisReply *) redisCommand(redis, redisCmd);
 				freeReplyObject(r);
 			}
@@ -175,32 +187,29 @@ int main(int argc, char *argv[], char *envp[])
 				if (!isExist(key) || (std::stoi(value) < 0)) {
 					*fail_cmd_count += 1;
 					cout << "key failed " << endl;
-					// strcpy(rindex,"err!\n");
+					strcpy(rindex,"err!\n");
 					// write(connfd, rindex, strlen(rindex)); // reply to client index
-					// *cmd_status = atoi(cmd_idx);
 					*cmd_status = atoi(cmd_idx);
 					continue;
 				}	
 				
 				snprintf(redisCmd, sizeof(redisCmd), "decrby %s %s", key.c_str(), value.c_str());
 				redisReply *r = (redisReply *) redisCommand(redis, redisCmd);
-				freeReplyObject(r);
-				// cout << "decrby: " <<  key.c_str() << " " << value.c_str() << " " << r->integer << endl; // debug
-				
+				cout << "decrby: " <<  key.c_str() << " " << value.c_str() << " " << r->integer << endl; // debug
+
 				// get return string
 				if (r->integer < 0) {
 					snprintf(redisCmd, sizeof(redisCmd), "incrby %s %s", key.c_str(), value.c_str());
 					r = (redisReply *) redisCommand(redis, redisCmd);
 					freeReplyObject(r);
 					*fail_cmd_count += 1;
+					strcpy(rindex,"err!\n");
 					cout << "key failed " << endl;
-					// strcpy(rindex,"err!\n");
 					// write(connfd, rindex, strlen(rindex)); // reply to client index
-					// *cmd_status = atoi(cmd_idx);
 					*cmd_status = atoi(cmd_idx);
 					continue;
 				}
-				
+				freeReplyObject(r);
 			}
 			else if (!strcmp(cmd, "remit")) {
 				char redisCmd[MAXLINE];
@@ -218,9 +227,9 @@ int main(int argc, char *argv[], char *envp[])
 					value = string(pch);
 				}
 				
-				if (!isExist(key1) || !isExist(key2) || (std::stoi(value.c_str()) < 0) || key1.compare(key2) == 0) {
+				if (!isExist(key1) || !isExist(key2) || (std::stoi(value.c_str()) < 0)) {
 					strcpy(rindex,"err!\n");
-					cout << "key failed" << endl;
+					cout << "key failed " << endl;
 					*fail_cmd_count += 1;
 					// write(connfd, rindex, strlen(rindex)); // reply to client index
 					*cmd_status = atoi(cmd_idx);
@@ -234,20 +243,18 @@ int main(int argc, char *argv[], char *envp[])
 					snprintf(redisCmd, sizeof(redisCmd), "incrby %s %s", key1.c_str(), value.c_str());
 					r = (redisReply *) redisCommand(redis, redisCmd);
 					freeReplyObject(r);
+					strcpy(rindex,"err!\n");
 					*fail_cmd_count += 1;
-					// strcpy(rindex,"err!\n");
-					// continue;
 				}
 				else {
 					snprintf(redisCmd, sizeof(redisCmd), "incrby %s %s", key2.c_str(), value.c_str());
+
 					r = (redisReply *) redisCommand(redis, redisCmd);
-					
 				}
 				
 				freeReplyObject(r);
 			}
 			else if (!strcmp(cmd, "end")) {
-				cout << "In end" <<endl;
 				redisReply *r = (redisReply *) redisCommand(redis, "keys *");
 				for (int i = 0; i < r->elements; i++) {
 					char redisCmd[MAXLINE];
@@ -260,26 +267,21 @@ int main(int argc, char *argv[], char *envp[])
 					
 					mResult[key] = r->str;
 				}
-				freeReplyObject(r);
+				
 				for(map<string, string>::iterator it = mResult.begin(); it != mResult.end(); it++) {
 					char r[MAXLINE];
 					snprintf(r, sizeof(r), "%s : %s\n", (*it).first.c_str(), (*it).second.c_str());
 					//cout << (*it).first << " : " << (*it).second << endl;
 					write(connfd, r, strlen(r));
 				}
-				
+
 				// calculate the success rate
-				int total = *cmd_status;
-				int fail = *fail_cmd_count;
-				int success = total - fail;
-			
 				char r2[MAXLINE];
-				snprintf(r2, sizeof(r2), "\nsuccess rate : (%d/%d)\n", success, total);
+				
+				snprintf(r2, sizeof(r2), "\nsuccess rate : (%d/%d)\n", *cmd_status - *fail_cmd_count, *cmd_status);
 				write(connfd, r2, strlen(r2));
 				// cout << endl << "success rate : (" << *cmd_status - *fail_cmd_count << "/" << *cmd_status << ")" << endl;
-				*cmd_status = 0;
-				*total_cmd_count = 0;
-				*fail_cmd_count = 0;
+				freeReplyObject(r);
 				break;
 			}
 
@@ -289,17 +291,10 @@ int main(int argc, char *argv[], char *envp[])
 			//write(connfd, rindex, strlen(rindex)); // reply to client index
 			//printf("afeter write\n");
 		}
-		// clear shared memory
-		// *cmd_status = 0;
-		// *fail_cmd_count = 0;
-		
 		mResult.clear();
-
 		close(connfd);
 	}
-	clean_share_mem(cmd_status, cmd_status_id);
-	clean_share_mem(total_cmd_count, total_cmd_count_id);
-	clean_share_mem(fail_cmd_count, fail_cmd_count_id);
+	
 	redisFree(redis);
 }
 
@@ -320,35 +315,4 @@ void checkConnection()
 		perror("Listen Error");
 		exit(errno);
 	}
-}
-
-bool checkKeyAndValue(string key, string value)
-{
-	if (isExist(key) || (std::stoi(value) < 0)){
-		*fail_cmd_count += 1;
-		cout << "key failed " << endl;
-		// strcpy(rindex,"err!\n");
-		// write(connfd, rindex, strlen(rindex)); // reply to client index
-		// *cmd_status = atoi(cmd_idx);
-		return false;
-	}
-	return true;
-}
-
-bool isExist(string key) 
-{
-	char cmd[MAXLINE];
-	int result;
-	
-	snprintf(cmd, sizeof(cmd), "exists %s", key.c_str());
-	redisReply *r = (redisReply *) redisCommand(redis, cmd);
-
-	if (r->integer == 1) {
-		freeReplyObject(r);
-		return true;
-	}
-	else {
-		freeReplyObject(r);
-		return false;
-	} 
 }

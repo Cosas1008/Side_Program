@@ -121,14 +121,13 @@ int main(int argc, char **argv)
 	    // }
     	totalCnt+= 1;
 	}
-	cout << "Done sending" <<endl;
+	
 	while( (n = readline(sockfd, buffer, MAXLINE)) > 0) 
 	{
 		buffer[n] = 0;
 		fout << buffer;
 		cout << buffer;
 	}
-	cout << "Total is : " << totalCnt << endl;
 	// cout << "success rate : (" << totalCnt - failCnt << "/" << totalCnt << ")" << endl;
 	// fout << "success rate : (" << totalCnt - failCnt << "/" << totalCnt << ")" << endl;
 	fin.close();
