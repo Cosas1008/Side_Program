@@ -128,7 +128,7 @@ int main(int argc, char **argv)
 		fout << buffer;
 		cout << buffer;
 	}
-	cout << "Total is : " << totalCnt << endl;
+	// cout << "Total is : " << totalCnt << endl;
 	// cout << "success rate : (" << totalCnt - failCnt << "/" << totalCnt << ")" << endl;
 	// fout << "success rate : (" << totalCnt - failCnt << "/" << totalCnt << ")" << endl;
 	fin.close();
