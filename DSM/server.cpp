@@ -38,19 +38,19 @@ int *total_cmd_count;
 int *fail_cmd_count;
 
 // sort struct
-// struct mapSortCmp{
-// 	bool operator()(string str1, string str2){
-// 		if(!str1.empty()&&!str2.empty()){
-// 			std::string::size_type sz1, sz2;   // alias of size_t
-// 			cout << "Str1 : " << str1 << endl << "Str2 : " << str2 << endl;
-// 			// int number1 = std::stoi(str1);
-// 			// int number2 = std::stoi(str1);
-// 			// return (number1 < number2);
-// 			return true;
-// 		}
-// 		return true;
-// 	}
-// };
+struct mapSortCmp{
+	bool operator()(string str1, string str2){
+		if(!str1.empty()&&!str2.empty()){
+			std::string::size_type sz1, sz2;   // alias of size_t
+			// cout << "Str1 : " << str1 << endl << "Str2 : " << str2 << endl;
+			// int number1 = std::stoi(str1);
+			// int number2 = std::stoi(str1);
+			// return (number1 < number2);
+			return true;
+		}
+		return true;
+	}
+};
 
 // Shared Memory
 int create_share_mem(key_t key, size_t size, int **shm_addr) 
