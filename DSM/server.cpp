@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <iostream>
+#include <sstream>
 #include <map>
 #include "readline.h"
 #include "hiredis/hiredis.h"
@@ -32,25 +33,62 @@ struct sockaddr_in server_addr;
 void checkConnection();
 bool checkKeyAndValue(string key, string value);
 bool isExist(string key);
+bool compareNat(const std::string&, const std::string&);
 
 int *cmd_status;
 int *total_cmd_count;
 int *fail_cmd_count;
 
+std::string toUpper(std::string s){
+    for(int i = 0;i < (int) s.length(); i++)
+	{
+		s[i]=toupper(s[i]);
+	}
+    return s;
+}
+
+
 // sort struct
 struct mapSortCmp{
 	bool operator()(string str1, string str2){
-		if(!str1.empty()&&!str2.empty()){
-			std::string::size_type sz1, sz2;   // alias of size_t
-			// cout << "Str1 : " << str1 << endl << "Str2 : " << str2 << endl;
-			// int number1 = std::stoi(str1);
-			// int number2 = std::stoi(str1);
-			// return (number1 < number2);
-			return true;
-		}
-		return true;
+		return compareNat(str1, str2);
 	}
 };
+
+// compareNat and toUpper are refered from 
+// https://stackoverflow.com/questions/13856975/how-to-sort-file-names-with-numbers-and-alphabets-in-order-in-c
+bool compareNat(const std::string& a, const std::string& b){
+    if (a.empty())
+        return true;
+    if (b.empty())
+        return false;
+    if (std::isdigit(a[0]) && !std::isdigit(b[0]))
+        return true;
+    if (!std::isdigit(a[0]) && std::isdigit(b[0]))
+        return false;
+    if (!std::isdigit(a[0]) && !std::isdigit(b[0]))
+    {
+        if (a[0] == b[0])
+            return compareNat(a.substr(1), b.substr(1));
+        return (toUpper(a) < toUpper(b));
+        //toUpper() is a function to convert a std::string to uppercase.
+    }
+
+    // Both strings begin with digit --> parse both numbers
+    std::istringstream issa(a);
+    std::istringstream issb(b);
+    int ia, ib;
+    issa >> ia;
+    issb >> ib;
+    if (ia != ib)
+        return ia < ib;
+
+    // Numbers are the same --> remove numbers and recurse
+    std::string anew, bnew;
+    std::getline(issa, anew);
+    std::getline(issb, bnew);
+    return (compareNat(anew, bnew));
+}
 
 // Shared Memory
 int create_share_mem(key_t key, size_t size, int **shm_addr) 
@@ -72,7 +110,7 @@ int main(int argc, char *argv[], char *envp[])
 	int n;
 	char buffer[MAXLINE];
 	char *pch;
-	map<string, string> mResult;
+	map<string, string, mapSortCmp> mResult;
 	
 	if(argc != 2) {
 		printf("Usage: ./server <port>\n");
@@ -276,6 +314,9 @@ int main(int argc, char *argv[], char *envp[])
 					mResult[key] = r->str;
 				}
 				freeReplyObject(r);
+
+				// std::sort(mResult.begin(), mResult.end(), compareNat);
+
 				for(map<string, string>::iterator it = mResult.begin(); it != mResult.end(); it++) {
 					char r[MAXLINE];
 					snprintf(r, sizeof(r), "%s : %s\n", (*it).first.c_str(), (*it).second.c_str());

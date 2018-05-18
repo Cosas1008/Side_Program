@@ -5,3 +5,7 @@ HW2_0550193/
 *.rdb
 *.o
 log*
+serverPort
+client
+.vscode/
+*vscode*/
