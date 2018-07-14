@@ -47,7 +47,6 @@ std::string toUpper(std::string s){
     return s;
 }
 
-
 // sort struct
 struct mapSortCmp{
 	bool operator()(string str1, string str2){
@@ -140,11 +139,11 @@ int main(int argc, char *argv[], char *envp[])
 		
 		while((n = readline(connfd, buffer, MAXLINE)) > 0) {
 			char cmd[100] = {0}, key[100] = {0}, value[100] = {0}, cmd_idx[100] = {0};
-			char rindex[100] = "okay!";
+			// char rindex[100] = "okay!";
 			buffer[n] = 0;
 			// totalCnt += 1;
 		
-			if((pch = strtok(buffer, " \n"))) {
+			if((pch = strtok(buffer, " \r\n"))) {
 				strcpy(cmd_idx, pch);
 			}
 			if((pch = strtok(NULL, " \r\n"))) {
@@ -158,8 +157,9 @@ int main(int argc, char *argv[], char *envp[])
 				}
 			}
 			else {
-				// flush database
+				// flush database, only the first cmd_idx will do
 				redisReply *r = (redisReply *) redisCommand(redis, "flushall");
+				freeReplyObject(r);
 			}
 
 			cout << argv[1] << " : " << cmd_idx << " " << cmd << endl;
@@ -237,10 +237,9 @@ int main(int argc, char *argv[], char *envp[])
 				
 				snprintf(redisCmd, sizeof(redisCmd), "decrby %s %s", key.c_str(), value.c_str());
 				redisReply *r = (redisReply *) redisCommand(redis, redisCmd);
-				freeReplyObject(r);
 				// cout << "decrby: " <<  key.c_str() << " " << value.c_str() << " " << r->integer << endl; // debug
 				
-				// get return string
+				// get return value, if the value is negative, then rollback
 				if (r->integer < 0) {
 					snprintf(redisCmd, sizeof(redisCmd), "incrby %s %s", key.c_str(), value.c_str());
 					r = (redisReply *) redisCommand(redis, redisCmd);
@@ -253,6 +252,8 @@ int main(int argc, char *argv[], char *envp[])
 					*cmd_status = atoi(cmd_idx);
 					continue;
 				}
+
+				freeReplyObject(r);
 				
 			}
 			else if (!strcmp(cmd, "remit")) {
@@ -272,7 +273,7 @@ int main(int argc, char *argv[], char *envp[])
 				}
 				
 				if (!isExist(key1) || !isExist(key2) || (std::stoi(value.c_str()) < 0) || key1.compare(key2) == 0) {
-					strcpy(rindex,"err!\n");
+					// strcpy(rindex,"err!\n");
 					cout << "key failed" << endl;
 					*fail_cmd_count += 1;
 					// write(connfd, rindex, strlen(rindex)); // reply to client index
