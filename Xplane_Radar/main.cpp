@@ -8,15 +8,15 @@
 
 //#pragma comment( lib, "glew32.lib" )
 
-unsigned int width = 400, height = 320;
-GLuint texture = 0;
+unsigned int width = 500, height = 500;
+GLuint texture;
 char* filename = NULL;
 
 void initGL();
 void display();
 void reshape(GLsizei newwidth, GLsizei newheight);
 GLuint loadTexture();
-
+void keyboard(unsigned char key, int x, int y);
 
 int main(int argc, char* argv[])
 {
@@ -24,15 +24,17 @@ int main(int argc, char* argv[])
 
 	/* GLUT init */
 	glutInit(&argc, argv);				// GLUT initialized
-	glutInitDisplayMode(GLUT_RGB);
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(width, height);	// Set windows size
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("BMP Image");		// Set windows name
+	initGL();
 	glutDisplayFunc(display);			// Main display function
 	glutReshapeFunc(reshape);			// Optional
+	glutKeyboardFunc(keyboard);			// Optional
 
 	/* OpenGL 2D generic initialization*/
-	initGL();
+	
 
 	filename = argv[1];
 	/* OpenGL main loop*/
@@ -50,20 +52,30 @@ void display()
 	// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// glMatrixMode(GL_MODELVIEW);     // Operate on model-view matrix
 	// load image with loadTexture function
-	texture = loadTexture();
+	
 	// Clear color and depth buffers
 	// glClearDepth(0.0f);				// Set default	
-	glClear(GL_COLOR_BUFFER_BIT);	// Clear the window
-
-	glEnable(GL_TEXTURE_2D);
-	/* Draw a quad */
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear the window
+	// Refresh the texture
 	
+	loadTexture();
+	glMatrixMode(GL_MODELVIEW);
+	/* Draw a quad */
+	// bind texture
 	glBegin(GL_QUADS);
-	glTexCoord2i(0, 0); glVertex2i(0, 0);
-	glTexCoord2i(1, 0); glVertex2i(0, height);
-	glTexCoord2i(1, 1); glVertex2i(width, height);
-	glTexCoord2i(0, 1); glVertex2i(width, 0);
+	glTexCoord2f(0,0);
+	glVertex2f(0.0f, 0.0f);
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex2f(width, 0.0f);
+
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex2f(width, height);
+
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex2f(0.0f, height);
 	glEnd();
+	glDisable(GL_TEXTURE_2D);
 	/*
 	#if LOAD_BGRA
 		glDrawPixels(width, height, GL_BGRA, GL_UNSIGNED_BYTE, buffer);
@@ -76,8 +88,19 @@ void display()
 		glDrawPixels(width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer_convert);
 	#endif
 	*/
-	// glutSwapBuffers();
+	glutSwapBuffers();
 	glFlush();
+}
+
+void keyboard(unsigned char key, int x, int y)
+{
+	switch (key) {
+	case 27:
+		exit(0);
+		break;
+	default:
+		break;
+	}
 }
 
 /* Handler for window re-size event. Called back when the window first appears and
@@ -90,8 +113,8 @@ void reshape(GLsizei newwidth, GLsizei newheight)
 	glLoadIdentity();
 	glOrtho(0.0, width, height, 0.0, 0.0, 10.0);
 	glMatrixMode(GL_MODELVIEW);
-
-	glutPostRedisplay();
+	glLoadIdentity();
+	// glutPostRedisplay();
 }
 
 //loadTexture .bmp 24bit RGB image function
@@ -129,10 +152,10 @@ GLuint loadTexture()
 	if (imageSize == 0)    imageSize = width*height * 3; // 3 : one byte for each Red, Green and Blue component
 	if (dataPos == 0)      dataPos = 54; // The BMP header is done that way
 	//data = (unsigned char *)malloc(imageSize);// Create a buffer
-	unsigned char* data = new unsigned char[imageSize];
+	char* data = new char[imageSize];
 	// Read the actual data from the file into the buffer
 	// fread ( void * ptr, size_t size, size_t count, FILE * stream );
-	fread(data, sizeof(unsigned char), imageSize, file);
+	fread(data, sizeof(char), imageSize, file);
 	
 	// Convert (B, G, R) to (R, G, B)
 	unsigned char tmp;
@@ -144,19 +167,26 @@ GLuint loadTexture()
 	}
 	// Set glMatrixMode to GL_TEXTURE
 	glMatrixMode(GL_TEXTURE);
-	// glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D);
 	glGenTextures(1, &texture);
 	// "Bind" the newly created texture : all future texture functions will modify this texture
 	glBindTexture(GL_TEXTURE_2D, texture);
 
+	
+	printf("Data size %d", strlen(data));
+	// Give the image to OpenGL
+	if (data) 
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	}
+	else 
+	{
+		printf("No data");
+	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	// Give the image to OpenGL
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-
 	// Release memory
 
 	fclose(file);
