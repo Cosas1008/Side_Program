@@ -49,6 +49,8 @@ int main(int argc, char* argv[])
 whenever the window needs to be re-painted. */
 void display()
 {
+	/*
+	
 	// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// glMatrixMode(GL_MODELVIEW);     // Operate on model-view matrix
 	// load image with loadTexture function
@@ -60,7 +62,7 @@ void display()
 	
 	loadTexture();
 	glMatrixMode(GL_MODELVIEW);
-	/* Draw a quad */
+	// Draw a quad
 	// bind texture
 	glBegin(GL_QUADS);
 	glTexCoord2f(0,0);
@@ -76,18 +78,28 @@ void display()
 	glVertex2f(0.0f, height);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
-	/*
-	#if LOAD_BGRA
-		glDrawPixels(width, height, GL_BGRA, GL_UNSIGNED_BYTE, buffer);
-	#elif LOAD_RGB24
-		glDrawPixels(width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
-	#elif LOAD_BGR24
-		glDrawPixels(width, height, GL_BGR_EXT, GL_UNSIGNED_BYTE, buffer);
-	#elif LOAD_YUV420P
-		CONVERT_YUV420PtoRGB24(buffer, buffer_convert, width, height);
-		glDrawPixels(width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer_convert);
-	#endif
 	*/
+	glMatrixMode(GL_MODELVIEW);		// Set the matrix mode to object modeling
+	glPushMatrix();
+	glLoadIdentity();
+	// glDisable(GL_LIGHTING);
+	loadTexture();
+	// Draw a textured quad
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0); glVertex3f(width, height, 0);
+	glTexCoord2f(0, 1); glVertex3f(width, 0, 0);
+	glTexCoord2f(1, 1); glVertex3f(0 ,0 , 0);
+	glTexCoord2f(1, 0); glVertex3f(0, height, 0);
+	glEnd();
+
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glMatrixMode(GL_MODELVIEW);
+
 	glutSwapBuffers();
 	glFlush();
 }
@@ -152,10 +164,10 @@ GLuint loadTexture()
 	if (imageSize == 0)    imageSize = width*height * 3; // 3 : one byte for each Red, Green and Blue component
 	if (dataPos == 0)      dataPos = 54; // The BMP header is done that way
 	//data = (unsigned char *)malloc(imageSize);// Create a buffer
-	char* data = new char[imageSize];
+	unsigned char* data = new unsigned char[imageSize];
 	// Read the actual data from the file into the buffer
 	// fread ( void * ptr, size_t size, size_t count, FILE * stream );
-	fread(data, sizeof(char), imageSize, file);
+	fread(data, sizeof(unsigned char), imageSize, file);
 	
 	// Convert (B, G, R) to (R, G, B)
 	unsigned char tmp;
@@ -172,10 +184,9 @@ GLuint loadTexture()
 	// "Bind" the newly created texture : all future texture functions will modify this texture
 	glBindTexture(GL_TEXTURE_2D, texture);
 
-	
-	printf("Data size %d", strlen(data));
+	// printf("Data size %d",imageSize);
 	// Give the image to OpenGL
-	if (data) 
+	if (data != nullptr) 
 	{
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 	}
@@ -197,8 +208,10 @@ GLuint loadTexture()
 	return texture;
 }
 
+
 void initGL()
 {
+	/*
 	glViewport(0, 0, width, height); // use a screen size of width by height
 	// glEnable(GL_TEXTURE_2D);     // Enable 2D texturing
 
@@ -210,5 +223,14 @@ void initGL()
 	glOrtho(0.0, width, 0.0, height, 0.0, 1.0);
 
 	glMatrixMode(GL_MODELVIEW);    // Set the matrix mode to object modeling
-	
+	*/
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0.0, glutGet(GLUT_WINDOW_WIDTH), 0.0, glutGet(GLUT_WINDOW_HEIGHT), -1.0, 1.0);
+	glMatrixMode(GL_MODELVIEW);		// Set the matrix mode to object modeling
+	glPushMatrix();
+	glLoadIdentity();
+	// glDisable(GL_LIGHTING);
+	// glColor3f(1, 1, 1);
 }
