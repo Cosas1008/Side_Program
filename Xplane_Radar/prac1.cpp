@@ -15,12 +15,15 @@
 // GLUT
 #include <GL/glut.h>
 
+
+#define WIDTH 400
+#define HEIGHT 400
 const int n = 20;
-const GLfloat R = 0.5f;
+const GLfloat R = 1.0f;
 const GLfloat Pi = 3.1415926536f;
-const GLfloat factor = 0.1f;
 static int day = 200;
 double FPS, FPS_old;
+
 // Function Declair
 double CalFrequency(void);
 void myDisplay(void);
@@ -71,32 +74,19 @@ void myDisplay(void)
 */
 void myDisplay(void)
 {
-     glEnable(GL_DEPTH_TEST);
-     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-     glMatrixMode(GL_PROJECTION);
-     glLoadIdentity();
-     gluPerspective(75, 1, 1, 400000000);
-     glMatrixMode(GL_MODELVIEW);
-     glLoadIdentity();
-     gluLookAt(0, -200000000, 200000000, 0, 0, 0, 0, 0, 1);
-
-     // Red Sun
-     glColor3f(1.0f, 0.0f, 0.0f);
-     glutSolidSphere(69600000, 20, 20);
-     // Blue Earth
-     glColor3f(0.0f, 0.0f, 1.0f);
-     glRotatef(day/360.0*360.0, 0.0f, 0.0f, -1.0f);
-     glTranslatef(150000000, 0.0f, 0.0f);
-     glutSolidSphere(15945000, 20, 20);
-     // Yellow Moon
-     glColor3f(1.0f, 1.0f, 0.0f);
-     glRotatef(day/30.0*360.0 - day/360.0*360.0, 0.0f, 0.0f, -1.0f);
-     glTranslatef(38000000, 0.0f, 0.0f);
-     glutSolidSphere(4345000, 20, 20);
-
-     glFlush();
-     glutSwapBuffers();
+    int n = 120;
+    glLineWidth(1.0f);
+    glViewport(0,-HEIGHT/2,WIDTH,HEIGHT);
+    glBegin(GL_LINE_LOOP);
+    glColor3f(0.0f,1.0f,0.0f);
+    for(float l=0.2; l <= 1; l += 0.2){
+        for(int i=0; i<=n; i++){
+            glVertex2f(R*l*cos(Pi*i/n),R*l*sin(Pi*i/n));
+        }
+    }
+    glEnd();
+    glFlush();
+    glutSwapBuffers();
 }
 void myIdle(void)
 {
@@ -151,7 +141,7 @@ int main(int argc, char* argv[])
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
     glutInitWindowPosition(100, 100);
-    glutInitWindowSize(400, 400);
+    glutInitWindowSize(WIDTH, HEIGHT);
     glutCreateWindow("First OpenGL Example");
     glutDisplayFunc(&myDisplay);
     glutIdleFunc(&myIdle);                // 新加入了这句
