@@ -3,14 +3,14 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <map>
+#include <Points.h>
+
 // #include <unistd.h> // usleep function
 
 // GLEW
 #define GLEW_STATIC
 #include <GL/glew.h>
-
-// GLFW
-#include <GLFW/glfw3.h>
 
 // GLUT
 #include <GL/glut.h>
@@ -22,17 +22,21 @@
 
 #define WIDTH 400
 #define HEIGHT 400
+
 const int n = 20;
 const GLfloat R = 1.0f;
 const GLfloat Pi = 3.1415926536f;
-static int day = 200;
 double FPS, FPS_old;
 char fpsChar[255];
+map<float,Points> mTarget;
 // Function Declair
 double CalFrequency(void);
 void myDisplay(void);
 void myIdle(void);
 void print(int x, int y,int z, char *string);
+
+
+
 
 void myDisplay(void)
 {
@@ -56,6 +60,7 @@ void myDisplay(void)
 	// }
 	// glEnd();
 
+    // Background line
     glLineWidth(1.0f);
     glViewport(0,-HEIGHT/2,WIDTH,HEIGHT);
     glBegin(GL_LINE_LOOP);
@@ -65,6 +70,7 @@ void myDisplay(void)
             glVertex2f(R*l*cos(Pi*(float)i/(float)n),R*l*sin(Pi*(float)i/(float)n));
         }
     }
+
     glEnd();
     glFlush();
     glutSwapBuffers();
@@ -72,8 +78,8 @@ void myDisplay(void)
 
 void printingOut(char name[])
 {
-    int i = 0;
-    while(i <= strlen(name) ){
+    int32_t i = 0;
+    while(i <= (int32_t) strlen(name) ){
         std::cout << name[i];
         i++;
     }
@@ -86,7 +92,7 @@ void myIdle(void)
     FPS = CalFrequency();
     char header[] = "FPS = ";
     char buffer[64];
-    int ret = snprintf(buffer, sizeof buffer, "%f", FPS);
+    snprintf(buffer, sizeof buffer, "%f", FPS);
     strcpy(fpsChar,header);
     if(FPS != FPS_old){
         strcat(fpsChar,buffer);
