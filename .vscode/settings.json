@@ -1,7 +1,7 @@
 {
     "files.associations": {
-        "cmath": "cpp",
-        "cstdlib": "cpp",
+        "cmath"   : "cpp",
+        "cstdlib" : "cpp",
         "typeinfo": "cpp"
     }
 }

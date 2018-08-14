@@ -3,14 +3,14 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <map>
+#include <Points.h>
+
 // #include <unistd.h> // usleep function
 
 // GLEW
 #define GLEW_STATIC
 #include <GL/glew.h>
-
-// GLFW
-#include <GLFW/glfw3.h>
 
 // GLUT
 #include <GL/glut.h>
@@ -22,18 +22,23 @@
 
 #define WIDTH 400
 #define HEIGHT 400
+
 const int n = 20;
 const GLfloat R = 1.0f;
 const GLfloat Pi = 3.1415926536f;
 float randomAng = 0.0f;
 double FPS, FPS_old;
 char fpsChar[255];
+map<float,Points> mTarget;
 // Function Declair
 double CalFrequency(void);
 void myDisplay(void);
 void myIdle(void);
 void print(int x, int y,int z, char *string);
 void drive();
+
+
+
 
 void myDisplay(void)
 {
@@ -42,6 +47,23 @@ void myDisplay(void)
     glClear(GL_COLOR_BUFFER_BIT);
     int n = 120;
     float range = 0.01f;
+
+    // float da, ga, gb, a, b;
+    // da = 2*Pi / (float)n;
+    // glBegin(GL_QUADS);
+	// for (int i = 0; i < n; i++) {
+	// 	a = (float)i * da;
+	// 	b = a + da;
+	// 	ga = 0.90 * (float)(i) / (float)n;
+	// 	gb = 0.90 * (float)(i + 1) / (float)n;
+	// 	glColor3f(0, ga, 0);
+	// 	glVertex2i(0, 0); glVertex2f(cos(a), sin(a));
+	// 	glColor3f(0, gb, 0);
+	// 	glVertex2f(cos(b), sin(b)); glVertex2i(0, 0);
+	// }
+	// glEnd();
+
+    // Background line
     glLineWidth(1.0f);
     glViewport(0,-HEIGHT/2,WIDTH,HEIGHT);
     glBegin(GL_LINE_LOOP);
@@ -51,6 +73,7 @@ void myDisplay(void)
             glVertex2f(R*l*cos(Pi*(float)i/(float)n),R*l*sin(Pi*(float)i/(float)n));
         }
     }
+
     glEnd();
     // sweep range
     glBegin(GL_QUADS);
@@ -85,17 +108,17 @@ void printingOut(char charAr[])
 void myIdle(void)
 {
     myDisplay();
-    // FPS = CalFrequency();
-    // char header[] = "FPS = ";
-    // char buffer[64];
-    // int ret = snprintf(buffer, sizeof buffer, "%f", FPS);
-    // strcpy(fpsChar,header);
-    // if(FPS != FPS_old){
-    //     strcat(fpsChar,buffer);
-    //     printingOut(fpsChar);
-    //     FPS_old = FPS;
-    // }
-    // strcat(fpsChar,buffer);
+    FPS = CalFrequency();
+    char header[] = "FPS = ";
+    char buffer[64];
+    snprintf(buffer, sizeof buffer, "%f", FPS);
+    strcpy(fpsChar,header);
+    if(FPS != FPS_old){
+        strcat(fpsChar,buffer);
+        printingOut(fpsChar);
+        FPS_old = FPS;
+    }
+    strcat(fpsChar,buffer);
 }
 
 double CalFrequency(void)
