@@ -1,41 +1,70 @@
 #include <iostream>
+#include <stdlib.h>     // exit
+#include <stdio.h>      // perror
 #include <string.h>     // bzero
+#include <cerrno>       // errno
 #include <sys/socket.h> // unused?
 #include <netinet/in.h>
 #include <unistd.h>     // read function
-
-#define PORT 8080
-
-using 
-namespace std;
+#include "readline.h"
+#define LENGTH 255
+using namespace std;
 
 
 int listenfd, connfd;
 struct sockaddr_in server_addr;
 void checkConnection();
+void openbmpImage(char * );
 
 int main(int argc, char const *argv[])
 {
+    char buffer[MAXLINE];
+    char *pch;
     int valread;
     int addrlen = sizeof(server_addr);
     /* code */
     bzero(&server_addr, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(atoi(argv[1]));
+    // server_addr.sin_port = PORT;
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	checkConnection();
+    while(1){
+        connfd = accept(listenfd, (struct sockaddr *) NULL, NULL);
+        // cout << "Connected" << endl;
+        while((valread = readline(connfd, buffer, MAXLINE)) > 0){
+            char filepwd[LENGTH] = {0};
+            buffer[valread] = 0;
 
+            cout << "In buffer : " << buffer << endl;
+            // get file pwd
+            if((pch = strtok(buffer, " \r\n"))){
+                strcpy(filepwd, pch);
+            }
+
+            if(!strcmp(filepwd, "0")){
+                // block do nothing
+                cout << "server idle\n" << endl;
+            }else{
+                // open bmp file
+                cout << "server open: " << filepwd << endl;
+                // openbmpImage(filepwd);
+            }
+            
+            cout << "filepwd is : " << filepwd << endl;
+        }
+
+        close(connfd);
+    }
     if ((connfd = accept(listenfd, (struct sockaddr *)&server_addr, 
                        (socklen_t*)&addrlen))<0)
     {
         perror("Accept Error");
         exit(EXIT_FAILURE);
     }
-    char buffer[1024];
-    valread = read( connfd , buffer, 1024);
-    printf("%s\n",buffer );
     return 0;
 }
+
 void checkConnection()
 {
     int opt = 1;
@@ -63,4 +92,11 @@ void checkConnection()
 		exit(errno);
 	}
 
+}
+
+void openbmpImage(char * arr)
+{
+    char temp[LENGTH];
+    strcpy(temp,arr);
+    printf("Received File : %s", temp);
 }
