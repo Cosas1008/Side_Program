@@ -1,9 +1,10 @@
 CC:= g++
 SRC_DIR = Linux
-CFLAGS= -c -Wall -I. -lGL -lGLU -lglut -std=gnu++0x
+CFLAGS := -Wall -I. -lGL -lGLU -lglut 
 all:
-	$(CC) prac.cpp $(CFLAGS) -o prac.o  && ./prac.o
+	$(CC) radar.cpp $(CFLAGS) -o radar.o -std=gnu++0x && ./radar.o
 
+	
 .PHONY: clean
 clean:
 	rm -rf *.o *.exe
