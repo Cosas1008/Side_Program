@@ -5,7 +5,7 @@ all:
 	$(CXX) client.cpp -o client.o $(CXX_FLAGS)
 
 runserver:
-	./serverPort.o 2018 > log1 &
+	./serverPort.o 2018 > log &
 
 killserver:
 	killall -r serverPort
@@ -15,5 +15,5 @@ testClient:
 
 .PHONY: clean
 clean:
-	rm -f server.o client.o
+	rm -f server.o client.o log
 
