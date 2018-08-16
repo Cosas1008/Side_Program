@@ -70,6 +70,17 @@ int main(int argc, char **argv)
 	write(sockfd,buffer, strlen(buffer));
 
 	// cout << "Done sending" <<endl;
-
+	//send stuff to server
+    for(;;)
+    {
+        char s[300];
+        //cin.clear();
+        //cin.ignore(256, '\n');
+        cout << "Enter stuff: ";
+        bzero(s, 301);
+        cin.getline(s, 300);
+        
+        write(sockfd, s, strlen(s));
+    }
 	close(sockfd);
 }
