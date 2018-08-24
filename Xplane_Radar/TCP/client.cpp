@@ -63,10 +63,7 @@ int main(int argc, char **argv)
 	
 	snprintf(buffer, MAXLINE, "%s \n", argv[3]);
 	cout << "bmp file name " << buffer << endl;
-
-	
 	sockfd = connectToServer(argv[1], argv[2]);
-	
 	write(sockfd,buffer, strlen(buffer));
 
 	// cout << "Done sending" <<endl;
