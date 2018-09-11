@@ -20,11 +20,6 @@ Load .bmp image and import as `GL_TEXTURE_2D`
 3. radar.cpp  
     working version for display the basic radar, need to add on tcp/ip function later
 
-4. glutfonts.c  
-    display text on opengl with fixed position
-
-5. prac.cpp  
-    example code from csdn opengl tutorial
 * Usage:
 
 on Linux:  

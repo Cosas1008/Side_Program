@@ -1,11 +1,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
-#include <time.h>
 #include <map>
-#include <Points.h>
-
+#include <Point.h>
 // #include <unistd.h> // usleep function
 
 // GLEW
@@ -22,6 +19,9 @@
 
 #define WIDTH 400
 #define HEIGHT 400
+#define NTARGET 10
+
+
 
 const int n = 20;
 const GLfloat R = 1.0f;
@@ -29,16 +29,23 @@ const GLfloat Pi = 3.1415926536f;
 float randomAng = 0.0f;
 double FPS, FPS_old;
 char fpsChar[255];
-map<float,Points> mTarget;
+map<int,Point> mTarget;
 // Function Declair
 double CalFrequency(void);
 void myDisplay(void);
 void myIdle(void);
 void print(int x, int y,int z, char *string);
 void drive();
+void randomTarget();
 
 
 
+void randomTarget()
+{
+    for(int i = 0; i <NTARGET ; i++){
+        mTarget.insert(new Point());
+    }
+}
 
 void myDisplay(void)
 {
