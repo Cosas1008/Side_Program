@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
-#include <map>
+#include <vector>
 #include <Point.h>
 // #include <unistd.h> // usleep function
 
@@ -29,7 +29,7 @@ const GLfloat Pi = 3.1415926536f;
 float randomAng = 0.0f;
 double FPS, FPS_old;
 char fpsChar[255];
-map<int,Point> mTarget;
+vector<Point> vTarget;
 // Function Declair
 double CalFrequency(void);
 void myDisplay(void);
@@ -42,8 +42,8 @@ void randomTarget();
 
 void randomTarget()
 {
-    for(int i = 0; i <NTARGET ; i++){
-        mTarget.insert(new Point());
+    for(int i = 0; i < NTARGET ; i++){
+        vTarget.push_back(*(new Point()));
     }
 }
 
@@ -71,10 +71,12 @@ void myDisplay(void)
 	// glEnd();
 
     // Background line
-    glLineWidth(1.0f);
     glViewport(0,-HEIGHT/2,WIDTH,HEIGHT);
+    
+    
     glBegin(GL_LINE_LOOP);
-    glColor3f(0.0f,1.0f,0.0f);
+    glLineWidth(1.0f);
+    glColor3f(0.0f,1.0f,0.0f);  // Green Line
     for(float l=0.2; l <= 1; l += 0.2){
         for(int i=0; i<=n; i++){
             glVertex2f(R*l*cos(Pi*(float)i/(float)n),R*l*sin(Pi*(float)i/(float)n));
@@ -147,33 +149,6 @@ double CalFrequency(void)
      return save;
 }
 
-void print(int x, int y,int z, char *string)
-{
-    //set the position of the text in the window using the x and y coordinates
-    glRasterPos2f(x,y);
-    //get the length of the string to display
-    int len = (int) strlen(string);
-
-    //loop to display character by character
-    for (int i = 0; i < len; i++) 
-    {
-        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24,string[i]);
-    }
-}
-
-void print_bitmap_string(char* s)
-{
-    glViewport(0,0,WIDTH,HEIGHT);
-    float x = -225.0,y = 70.0;
-    glRasterPos2f(x, y);
-    print_bitmap_string(fpsChar);
-    if (s && strlen(s)) {
-        while (*s) {
-            glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10, *s);
-            s++;
-        }
-    }
-}
 
 int main(int argc, char* argv[])
 {
@@ -190,3 +165,31 @@ int main(int argc, char* argv[])
     return 0;
 
 }
+
+// void print(int x, int y,int z, char *string)
+// {
+//     //set the position of the text in the window using the x and y coordinates
+//     glRasterPos2f(x,y);
+//     //get the length of the string to display
+//     int len = (int) strlen(string);
+
+//     //loop to display character by character
+//     for (int i = 0; i < len; i++) 
+//     {
+//         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24,string[i]);
+//     }
+// }
+
+// void print_bitmap_string(char* s)
+// {
+//     glViewport(0,0,WIDTH,HEIGHT);
+//     float x = -225.0,y = 70.0;
+//     glRasterPos2f(x, y);
+//     print_bitmap_string(fpsChar);
+//     if (s && strlen(s)) {
+//         while (*s) {
+//             glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_10, *s);
+//             s++;
+//         }
+//     }
+// }

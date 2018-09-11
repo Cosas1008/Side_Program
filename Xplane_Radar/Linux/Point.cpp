@@ -1,6 +1,6 @@
-#include <math.h>
-#include <time.h>
 #include <Point.h>
+
+
 
 float radius, degree;
 
@@ -12,7 +12,7 @@ Point::Point(void){
     degree = rand()%180; // from 0 to 180
     x = radius*cos(rad2deg * degree);
     y = radius*sin(rad2deg * degree);
-}
+};
 
 Point::Point(int r, int deg){
     x = r*cos(rad2deg * degree);

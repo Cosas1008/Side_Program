@@ -1,8 +1,8 @@
 CC:= g++
 SRC_DIR = Linux
-CFLAGS := -Wall -I. -lGL -lGLU -lglut 
+CFLAGS := -Wall -I../Linux -lGL -lGLU -lglut 
 all:
-	$(CC) radar.cpp $(CFLAGS) -o radar.o -std=gnu++0x && ./radar.o
+	$(CC) radar.cpp Point.cpp $(CFLAGS) -o radar.o -std=gnu++0x && ./radar.o
 
 	
 .PHONY: clean
